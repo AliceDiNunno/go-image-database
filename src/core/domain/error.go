@@ -10,4 +10,5 @@ var (
 	ErrUnableToUploadFile               = errors.New("unable to upload file")
 	ErrFileNotFound                     = errors.New("file not found")
 	ErrUnableToSaveObject               = errors.New("unable to save object")
+	ErrUnableToRetrievePictures         = errors.New("unable to retrieve pictures")
 )

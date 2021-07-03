@@ -22,6 +22,7 @@ type AlbumRepo interface {
 }
 
 type PictureRepo interface {
+	FindPictures(album *domain.Album) ([]*domain.Picture, error)
 	CreatePicture(picture *domain.Picture) error
 	DeletePicture(picture *domain.Picture) error
 }

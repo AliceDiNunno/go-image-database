@@ -11,7 +11,7 @@ type Picture struct {
 
 	CreatedDate time.Time
 
-	Tags  []Tag
+	Tags  []*Tag
 	Album *Album
 }
 

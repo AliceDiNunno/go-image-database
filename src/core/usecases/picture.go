@@ -14,8 +14,8 @@ func (i interactor) UploadPicture(user *domain.User, albumId string, file io.Rea
 	}
 
 	picture := domain.Picture{
-		User:  user.UserID,
-		Tags:  nil,
+		User: user.UserID,
+		//Tags:  nil,
 		Album: album,
 	}
 	picture.Initialize()

@@ -43,12 +43,18 @@ func codeForError(err error) int {
 	switch err {
 	case ErrFormValidation:
 		return http.StatusBadRequest
+	case domain.ErrFailedToGetUser:
+		return http.StatusUnauthorized
 	case domain.ErrAlbumAlreadyExistingWithThisName:
 		return http.StatusConflict
-	case ErrNotFound, domain.ErrAlbumNotFound:
+	case ErrNotFound, domain.ErrAlbumNotFound, domain.ErrFileNotFound:
 		return http.StatusNotFound
+	case domain.ErrUnableToDeleteObject, domain.ErrUnableToUploadFile, domain.ErrUnableToRetrievePictures:
+		return http.StatusInternalServerError
 	case ErrUploadFileNotFound:
 		return http.StatusUnprocessableEntity
+	case domain.ErrUnableToSaveObject:
+		return http.StatusInsufficientStorage
 	}
 	return http.StatusInternalServerError
 }

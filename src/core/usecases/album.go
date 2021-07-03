@@ -44,7 +44,19 @@ func (i interactor) GetUserAlbums(user *domain.User) ([]*domain.Album, error) {
 }
 
 func (i interactor) GetAlbumsContent(user *domain.User, id string) ([]*domain.Picture, error) {
-	return nil, nil
+	album, err := i.albumRepo.FindById(user.UserID, id)
+
+	if err != nil {
+		return nil, domain.ErrAlbumNotFound
+	}
+
+	pictures, err := i.pictureRepo.FindPictures(album)
+
+	if err != nil || pictures == nil {
+		return nil, domain.ErrUnableToRetrievePictures
+	}
+
+	return pictures, nil
 }
 
 func (i interactor) DeleteAlbum(user *domain.User, id string) error {

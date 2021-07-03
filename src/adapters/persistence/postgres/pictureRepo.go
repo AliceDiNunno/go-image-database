@@ -14,7 +14,7 @@ type Picture struct {
 
 	CreatedDate time.Time
 
-	Tags    []Tag `gorm:"many2many:picture_tags;"`
+	Tags    []*Tag `gorm:"many2many:picture_tags;"`
 	AlbumID uuid.UUID
 	Album   *Album
 }
@@ -29,7 +29,7 @@ func pictureToDomain(picture *Picture) *domain.Picture {
 		User:        picture.User,
 		CreatedDate: picture.CreatedAt,
 		Album:       albumToDomain(picture.Album),
-		Tags:        nil,
+		Tags:        tagsToDomain(picture.Tags),
 	}
 }
 
@@ -71,6 +71,19 @@ func (p pictureRepo) DeletePicture(picture *domain.Picture) error {
 	query := p.db.Where("id = ?", idToRemove).Delete(&Picture{})
 
 	return query.Error
+}
+
+func (p pictureRepo) FindPictures(album *domain.Album) ([]*domain.Picture, error) {
+	albumId := album.ID
+	var pictures []*Picture
+
+	query := p.db.Joins("Album").Where("album_id = ?", albumId).Find(&pictures)
+
+	if query.Error != nil {
+		return nil, query.Error
+	}
+
+	return picturesToDomain(pictures), nil
 }
 
 func NewPictureRepo(db *gorm.DB) pictureRepo {

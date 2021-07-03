@@ -49,6 +49,7 @@ func (rH RoutesHandler) GetAlbumContentHandler(c *gin.Context) {
 
 	if err != nil {
 		rH.handleError(c, err)
+		return
 	}
 
 	c.JSON(http.StatusOK, content)
