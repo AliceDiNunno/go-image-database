@@ -44,12 +44,21 @@ func picturesToDomain(pictures []*Picture) []*domain.Picture {
 }
 
 func pictureFromDomain(picture *domain.Picture) *Picture {
+	var tags []*Tag
+
+	for _, tag := range picture.Tags {
+		tags = append(tags, &Tag{
+			ID:   tag.ID,
+			Name: tag.Name,
+		})
+	}
+
 	return &Picture{
 		ID:          picture.ID,
 		User:        picture.User,
 		CreatedDate: picture.CreatedDate,
 		AlbumID:     picture.Album.ID,
-		Tags:        nil,
+		Tags:        tags,
 	}
 }
 
@@ -77,7 +86,7 @@ func (p pictureRepo) FindPictures(album *domain.Album) ([]*domain.Picture, error
 	albumId := album.ID
 	var pictures []*Picture
 
-	query := p.db.Joins("Album").Where("album_id = ?", albumId).Find(&pictures)
+	query := p.db.Joins("Album").Preload("Tags").Where("album_id = ?", albumId).Find(&pictures)
 
 	if query.Error != nil {
 		return nil, query.Error

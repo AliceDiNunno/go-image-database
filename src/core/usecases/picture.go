@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"github.com/AliceDiNunno/go-image-database/src/core/domain"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"io"
 )
@@ -15,7 +16,16 @@ func (i interactor) UploadPicture(user *domain.User, albumId string, file io.Rea
 
 	picture := domain.Picture{
 		User: user.UserID,
-		//Tags:  nil,
+		Tags: []*domain.Tag{&domain.Tag{
+			ID:   uuid.New(),
+			Name: "A",
+		}, &domain.Tag{
+			ID:   uuid.New(),
+			Name: "B",
+		}, &domain.Tag{
+			ID:   uuid.New(),
+			Name: "C",
+		}},
 		Album: album,
 	}
 	picture.Initialize()
