@@ -3,7 +3,6 @@ module github.com/AliceDiNunno/go-image-database
 go 1.16
 
 require (
-	github.com/davecgh/go-spew v1.1.1
 	github.com/gin-gonic/gin v1.7.2
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/google/uuid v1.1.2

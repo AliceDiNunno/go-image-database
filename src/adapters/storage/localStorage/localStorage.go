@@ -44,6 +44,17 @@ func (l localStorage) DeleteFile(id string) error {
 	return nil
 }
 
+func (l localStorage) GetFile(id string) (io.Reader, error) {
+	path := l.makePath(id)
+	file, err := os.Open(path)
+
+	if err != nil {
+		return nil, domain.ErrFileNotFound
+	}
+
+	return file, nil
+}
+
 func NewLocalStorage(config config.StorageConfig) localStorage {
 	err := os.MkdirAll(config.Folder, os.ModePerm)
 

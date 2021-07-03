@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"github.com/AliceDiNunno/go-image-database/src/core/domain"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -21,8 +20,6 @@ type albumRepo struct {
 }
 
 func albumToDomain(album *Album) *domain.Album {
-	spew.Dump(album)
-
 	return &domain.Album{
 		ID:   album.ID,
 		Name: album.Name,

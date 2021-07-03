@@ -2,7 +2,6 @@ package usecases
 
 import (
 	"github.com/AliceDiNunno/go-image-database/src/core/domain"
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"io"
 )
@@ -15,17 +14,8 @@ func (i interactor) UploadPicture(user *domain.User, albumId string, file io.Rea
 	}
 
 	picture := domain.Picture{
-		User: user.UserID,
-		Tags: []*domain.Tag{&domain.Tag{
-			ID:   uuid.New(),
-			Name: "A",
-		}, &domain.Tag{
-			ID:   uuid.New(),
-			Name: "B",
-		}, &domain.Tag{
-			ID:   uuid.New(),
-			Name: "C",
-		}},
+		User:  user.UserID,
+		Tags:  nil,
 		Album: album,
 	}
 	picture.Initialize()
@@ -47,4 +37,39 @@ func (i interactor) UploadPicture(user *domain.User, albumId string, file io.Rea
 	}
 
 	return nil
+}
+
+func (i interactor) DeletePicture(user *domain.User, albumId string, fileId string) error {
+	picture, err := i.pictureRepo.FindById(user.UserID, albumId, fileId)
+
+	if err != nil || picture == nil {
+		return domain.ErrPictureNotFound
+	}
+
+	err = i.pictureRepo.DeletePicture(picture)
+	if err != nil {
+		return domain.ErrUnableToDeleteObject
+	}
+
+	err = i.fileStorage.DeleteFile(fileId)
+	if err != nil {
+		return domain.ErrUnableToDeleteObject
+	}
+
+	return nil
+}
+
+func (i interactor) FetchPicture(user *domain.User, albumId string, fileId string) (io.Reader, error) {
+	picture, err := i.pictureRepo.FindById(user.UserID, albumId, fileId)
+
+	if err != nil || picture == nil {
+		return nil, domain.ErrPictureNotFound
+	}
+
+	io, err := i.fileStorage.GetFile(fileId)
+	if err != nil {
+		return nil, err
+	}
+
+	return io, nil
 }

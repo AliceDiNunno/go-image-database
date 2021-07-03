@@ -23,6 +23,7 @@ type AlbumRepo interface {
 
 type PictureRepo interface {
 	FindPictures(album *domain.Album) ([]*domain.Picture, error)
+	FindById(user uuid.UUID, album string, picture string) (*domain.Picture, error)
 	CreatePicture(picture *domain.Picture) error
 	DeletePicture(picture *domain.Picture) error
 }
@@ -30,6 +31,7 @@ type PictureRepo interface {
 type FileStorage interface {
 	UploadFile(id string, file io.Reader) error
 	DeleteFile(id string) error
+	GetFile(id string) (io.Reader, error)
 }
 
 type interactor struct {

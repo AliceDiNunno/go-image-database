@@ -47,7 +47,7 @@ func codeForError(err error) int {
 		return http.StatusUnauthorized
 	case domain.ErrAlbumAlreadyExistingWithThisName:
 		return http.StatusConflict
-	case ErrNotFound, domain.ErrAlbumNotFound, domain.ErrFileNotFound:
+	case ErrNotFound, domain.ErrAlbumNotFound, domain.ErrFileNotFound, domain.ErrPictureNotFound:
 		return http.StatusNotFound
 	case domain.ErrUnableToDeleteObject, domain.ErrUnableToUploadFile, domain.ErrUnableToRetrievePictures:
 		return http.StatusInternalServerError

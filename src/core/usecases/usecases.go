@@ -11,5 +11,8 @@ type Usecases interface {
 	GetUserAlbums(user *domain.User) ([]*domain.Album, error)
 	DeleteAlbum(user *domain.User, id string) error
 	GetAlbumsContent(user *domain.User, id string) ([]*domain.Picture, error)
+
 	UploadPicture(user *domain.User, albumId string, file io.Reader, contentType string) error
+	DeletePicture(user *domain.User, albumId string, fileId string) error
+	FetchPicture(user *domain.User, albumId string, fileId string) (io.Reader, error)
 }
