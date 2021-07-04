@@ -21,9 +21,10 @@ type albumRepo struct {
 
 func albumToDomain(album *Album) *domain.Album {
 	return &domain.Album{
-		ID:   album.ID,
-		Name: album.Name,
-		User: album.User,
+		ID:          album.ID,
+		Name:        album.Name,
+		User:        album.User,
+		CreatedDate: album.CreatedAt,
 	}
 }
 

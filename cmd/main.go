@@ -27,19 +27,21 @@ func main() {
 
 	var albumRepo usecases.AlbumRepo
 	var pictureRepo usecases.PictureRepo
+	var tagRepo usecases.TagRepo
 
 	var db *gorm.DB
 	if dbConfig.Engine == "POSTGRES" {
 		db = postgres.StartGormDatabase(dbConfig)
 		albumRepo = postgres.NewAlbumRepo(db)
 		pictureRepo = postgres.NewPictureRepo(db)
+		tagRepo = postgres.NewTagRepo(db)
 
 		db.AutoMigrate(&postgres.Tag{})
 		db.AutoMigrate(&postgres.Album{})
 		db.AutoMigrate(&postgres.Picture{})
 	}
 
-	usecasesHandler := usecases.NewInteractor(albumRepo, pictureRepo, fileStorage)
+	usecasesHandler := usecases.NewInteractor(albumRepo, pictureRepo, tagRepo, fileStorage)
 
 	restServer := rest.NewServer(ginConfiguration)
 	routesHandler := rest.NewRouter(usecasesHandler)

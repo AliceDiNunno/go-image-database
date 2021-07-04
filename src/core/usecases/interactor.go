@@ -26,6 +26,13 @@ type PictureRepo interface {
 	FindById(user uuid.UUID, album string, picture string) (*domain.Picture, error)
 	CreatePicture(picture *domain.Picture) error
 	DeletePicture(picture *domain.Picture) error
+	UpdatePicture(picture *domain.Picture) error
+}
+
+type TagRepo interface {
+	FindTag(name string) (*domain.Tag, error)
+	FindTags(name string) ([]*domain.Tag, error)
+	CreateTag(tag *domain.Tag) error
 }
 
 type FileStorage interface {
@@ -37,13 +44,15 @@ type FileStorage interface {
 type interactor struct {
 	albumRepo   AlbumRepo
 	pictureRepo PictureRepo
+	tagRepo     TagRepo
 	fileStorage FileStorage
 }
 
-func NewInteractor(aR AlbumRepo, pR PictureRepo, fS FileStorage) interactor {
+func NewInteractor(aR AlbumRepo, pR PictureRepo, tR TagRepo, fS FileStorage) interactor {
 	return interactor{
 		albumRepo:   aR,
 		pictureRepo: pR,
+		tagRepo:     tR,
 		fileStorage: fS,
 	}
 }

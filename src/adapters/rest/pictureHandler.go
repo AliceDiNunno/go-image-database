@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"github.com/AliceDiNunno/go-image-database/src/core/domain/Request"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
@@ -78,5 +79,25 @@ func (rH RoutesHandler) RemovePictureHandler(c *gin.Context) {
 }
 
 func (rH RoutesHandler) EditPictureDataHandler(c *gin.Context) {
+	user := rH.getAuthenticatedUser(c)
+	if user == nil {
+		return
+	}
+	var request Request.EditPictureRequest
+	err := c.ShouldBind(&request)
 
+	if err != nil {
+		rH.handleError(c, ErrFormValidation)
+		return
+	}
+
+	albumId := c.Param("album")
+	pictureId := c.Param("picture")
+
+	err = rH.usecases.UpdatePicture(user, albumId, pictureId, request)
+
+	if err != nil {
+		rH.handleError(c, err)
+		return
+	}
 }

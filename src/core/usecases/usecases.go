@@ -15,4 +15,5 @@ type Usecases interface {
 	UploadPicture(user *domain.User, albumId string, file io.Reader, contentType string) error
 	DeletePicture(user *domain.User, albumId string, fileId string) error
 	FetchPicture(user *domain.User, albumId string, fileId string) (io.Reader, error)
+	UpdatePicture(user *domain.User, albumId string, fileId string, request Request.EditPictureRequest) error
 }

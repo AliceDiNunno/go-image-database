@@ -60,6 +60,30 @@ func (t tagRepo) DeleteTag(tag *domain.Tag) error {
 	return query.Error
 }
 
+func (t tagRepo) FindTag(name string) (*domain.Tag, error) {
+	var tag *domain.Tag
+
+	query := t.db.Where("name = ?", name).First(&tag)
+
+	if query.Error != nil {
+		return nil, query.Error
+	}
+
+	return tag, nil
+}
+
+func (t tagRepo) FindTags(name string) ([]*domain.Tag, error) {
+	var tags []*domain.Tag
+
+	query := t.db.Where("name = ?", name).Find(&tags)
+
+	if query.Error != nil {
+		return nil, query.Error
+	}
+
+	return tags, nil
+}
+
 func NewTagRepo(db *gorm.DB) tagRepo {
 	return tagRepo{
 		db: db,

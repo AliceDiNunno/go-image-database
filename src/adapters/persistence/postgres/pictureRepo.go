@@ -4,15 +4,12 @@ import (
 	"github.com/AliceDiNunno/go-image-database/src/core/domain"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"time"
 )
 
 type Picture struct {
 	gorm.Model
 	ID   uuid.UUID `gorm:"type:uuid;primary_key"`
 	User uuid.UUID `gorm:"type:uuid"`
-
-	CreatedDate time.Time
 
 	Tags    []*Tag `gorm:"many2many:picture_tags;"`
 	AlbumID uuid.UUID
@@ -54,11 +51,10 @@ func pictureFromDomain(picture *domain.Picture) *Picture {
 	}
 
 	return &Picture{
-		ID:          picture.ID,
-		User:        picture.User,
-		CreatedDate: picture.CreatedDate,
-		AlbumID:     picture.Album.ID,
-		Tags:        tags,
+		ID:      picture.ID,
+		User:    picture.User,
+		AlbumID: picture.Album.ID,
+		Tags:    tags,
 	}
 }
 
@@ -109,6 +105,14 @@ func (p pictureRepo) FindById(userId uuid.UUID, albumId string, pictureId string
 	}
 
 	return pictureToDomain(picture), nil
+}
+
+func (p pictureRepo) UpdatePicture(picture *domain.Picture) error {
+	pictureToUpdate := pictureFromDomain(picture)
+
+	err := p.db.Model(&pictureToUpdate).Association("Tags").Replace(pictureToUpdate.Tags)
+
+	return err
 }
 
 func NewPictureRepo(db *gorm.DB) pictureRepo {

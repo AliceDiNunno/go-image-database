@@ -7,3 +7,7 @@ type Tag struct {
 
 	Name string
 }
+
+func (t *Tag) Initialize() {
+	t.ID = uuid.New()
+}
