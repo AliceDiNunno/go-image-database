@@ -19,6 +19,7 @@ type AlbumRepo interface {
 	FindByUser(user uuid.UUID) ([]*domain.Album, error)
 	FindById(user uuid.UUID, id string) (*domain.Album, error)
 	DeleteAlbum(album *domain.Album) error
+	UpdateAlbum(album *domain.Album) error
 }
 
 type PictureRepo interface {

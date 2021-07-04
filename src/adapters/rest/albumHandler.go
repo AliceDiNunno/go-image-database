@@ -76,3 +76,26 @@ func (rH RoutesHandler) DeleteAlbumHandler(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
+
+func (rH RoutesHandler) EditAlbumDataHandler(c *gin.Context) {
+	user := rH.getAuthenticatedUser(c)
+	if user == nil {
+		return
+	}
+	var request Request.EditAlbumRequest
+	err := c.ShouldBind(&request)
+
+	if err != nil {
+		rH.handleError(c, ErrFormValidation)
+		return
+	}
+
+	albumId := c.Param("album")
+
+	err = rH.usecases.UpdateAlbum(user, albumId, request)
+
+	if err != nil {
+		rH.handleError(c, err)
+		return
+	}
+}

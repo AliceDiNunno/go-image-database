@@ -19,6 +19,7 @@ func SetRoutes(r *gin.Engine, routesHandler RoutesHandler) {
 	album.GET("/find", routesHandler.FindAlbumContentHandler) //Find album
 	album.POST("", routesHandler.PostToAlbumHandler)          //post a picture to an album
 	album.DELETE("", routesHandler.DeleteAlbumHandler)        //Deletes an album
+	album.PATCH("", routesHandler.EditAlbumDataHandler)
 
 	picture.GET("", routesHandler.GetPictureHandler)        //get a picture
 	picture.DELETE("", routesHandler.RemovePictureHandler)  //remove a picture

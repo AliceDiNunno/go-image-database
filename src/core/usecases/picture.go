@@ -3,7 +3,6 @@ package usecases
 import (
 	"github.com/AliceDiNunno/go-image-database/src/core/domain"
 	"github.com/AliceDiNunno/go-image-database/src/core/domain/Request"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/sirupsen/logrus"
 	"io"
 )

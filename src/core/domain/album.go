@@ -6,15 +6,15 @@ import (
 )
 
 type Album struct {
-	ID uuid.UUID
+	ID   uuid.UUID
 	User uuid.UUID
 
 	CreatedDate time.Time
 
-	Parent *Album
-	Name string
-	Tags []Tag
-	Public bool
+	Parent   *Album
+	Name     string
+	Tags     []*Tag
+	IsPublic bool
 }
 
 func (a *Album) Initialize() {
