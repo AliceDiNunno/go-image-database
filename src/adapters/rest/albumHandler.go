@@ -6,6 +6,12 @@ import (
 	"net/http"
 )
 
+func (rH RoutesHandler) fetchingAlbumMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+	}
+}
+
 func (rH RoutesHandler) GetUserAlbumsHandler(c *gin.Context) {
 	user := rH.getAuthenticatedUser(c)
 	if user == nil {
@@ -55,8 +61,26 @@ func (rH RoutesHandler) GetAlbumContentHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, content)
 }
 
-func (rH RoutesHandler) FindAlbumContentHandler(c *gin.Context) {
+func (rH RoutesHandler) SearchAlbumContentHandler(c *gin.Context) {
+	id := c.Param("album")
+	user := rH.getAuthenticatedUser(c)
 
+	var request Request.SearchAlbumRequest
+	err := c.ShouldBind(&request)
+
+	if err != nil {
+		rH.handleError(c, ErrFormValidation)
+		return
+	}
+
+	content, err := rH.usecases.SearchAlbumContent(user, id, request)
+
+	if err != nil {
+		rH.handleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, content)
 }
 
 func (rH RoutesHandler) DeleteAlbumHandler(c *gin.Context) {
@@ -82,6 +106,7 @@ func (rH RoutesHandler) EditAlbumDataHandler(c *gin.Context) {
 	if user == nil {
 		return
 	}
+
 	var request Request.EditAlbumRequest
 	err := c.ShouldBind(&request)
 

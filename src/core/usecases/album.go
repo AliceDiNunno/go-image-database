@@ -151,3 +151,15 @@ func (i interactor) UpdateAlbum(user *domain.User, albumId string, request Reque
 
 	return nil
 }
+
+func (i interactor) SearchAlbumContent(user *domain.User, albumId string, request Request.SearchAlbumRequest) ([]*domain.SearchPictureResult, error) {
+	album, err := i.albumRepo.FindById(user.UserID, albumId)
+
+	if err != nil || album == nil {
+		return nil, domain.ErrAlbumNotFound
+	}
+
+	pictures, err := i.pictureRepo.SearchPictures(album, request.Tags)
+
+	return pictures, err
+}

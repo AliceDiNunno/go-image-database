@@ -7,6 +7,12 @@ import (
 	"net/http"
 )
 
+func (rH RoutesHandler) fetchingPictureMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+	}
+}
+
 func (rH RoutesHandler) GetPictureHandler(c *gin.Context) {
 	user := rH.getAuthenticatedUser(c)
 	if user == nil {

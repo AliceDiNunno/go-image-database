@@ -12,6 +12,7 @@ type Usecases interface {
 	DeleteAlbum(user *domain.User, id string) error
 	GetAlbumsContent(user *domain.User, id string) ([]*domain.Picture, error)
 	UpdateAlbum(user *domain.User, albumId string, request Request.EditAlbumRequest) error
+	SearchAlbumContent(user *domain.User, albumId string, request Request.SearchAlbumRequest) ([]*domain.SearchPictureResult, error)
 
 	UploadPicture(user *domain.User, albumId string, file io.Reader, contentType string) error
 	DeletePicture(user *domain.User, albumId string, fileId string) error

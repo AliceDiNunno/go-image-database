@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"fmt"
 	"github.com/AliceDiNunno/go-image-database/src/core/domain"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -14,6 +15,11 @@ type Picture struct {
 	Tags    []*Tag `gorm:"many2many:picture_tags;"`
 	AlbumID uuid.UUID
 	Album   *Album
+}
+
+type PictureSearchResult struct {
+	ID      uuid.UUID
+	AlbumID uuid.UUID
 }
 
 type pictureRepo struct {
@@ -38,6 +44,23 @@ func picturesToDomain(pictures []*Picture) []*domain.Picture {
 	}
 
 	return pictureList
+}
+
+func searchPictureToDomain(picture *PictureSearchResult) *domain.SearchPictureResult {
+	return &domain.SearchPictureResult{
+		ID:      picture.ID,
+		AlbumID: picture.AlbumID,
+	}
+}
+
+func searchPicturesToDomain(pictures []*PictureSearchResult) []*domain.SearchPictureResult {
+	albumList := []*domain.SearchPictureResult{}
+
+	for _, album := range pictures {
+		albumList = append(albumList, searchPictureToDomain(album))
+	}
+
+	return albumList
 }
 
 func pictureFromDomain(picture *domain.Picture) *Picture {
@@ -113,6 +136,40 @@ func (p pictureRepo) UpdatePicture(picture *domain.Picture) error {
 	err := p.db.Model(&pictureToUpdate).Association("Tags").Replace(pictureToUpdate.Tags)
 
 	return err
+}
+
+//TODO: there should be 1000 ways to improve this but I guess I don't master gorm well enough yet
+func (p pictureRepo) SearchPictures(album *domain.Album, tags []string) ([]*domain.SearchPictureResult, error) {
+	//	var tagsFromDomain []*Tag
+	//albumFromDomain := albumFromDomain(album)
+
+	whereClause := "WHERE "
+
+	if len(tags) > 0 {
+		for idx, tag := range tags {
+			if idx > 0 {
+				whereClause = fmt.Sprintf("%s AND ", whereClause)
+			}
+
+			whereClause = fmt.Sprintf("%s '%s' = ANY(tag_array)", whereClause, tag)
+		}
+	}
+
+	var pictures []*PictureSearchResult
+
+	rawQuery := "SELECT p.id, p.created_at, p.updated_at, p.deleted_at, p.user, p.album_id, t.tag_array FROM pictures p, LATERAL ( " +
+		"SELECT ARRAY ( " +
+		"SELECT pt.tag_id " +
+		"FROM picture_tags pt " +
+		"WHERE pt.picture_id = p.id " +
+		") AS tag_array " +
+		") t"
+
+	rawQuery = fmt.Sprintf("%s %s ;", rawQuery, whereClause)
+
+	query := p.db.Raw(rawQuery).Scan(&pictures)
+
+	return searchPicturesToDomain(pictures), query.Error
 }
 
 func NewPictureRepo(db *gorm.DB) pictureRepo {

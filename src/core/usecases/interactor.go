@@ -23,6 +23,7 @@ type AlbumRepo interface {
 }
 
 type PictureRepo interface {
+	SearchPictures(album *domain.Album, tags []string) ([]*domain.SearchPictureResult, error)
 	FindPictures(album *domain.Album) ([]*domain.Picture, error)
 	FindById(user uuid.UUID, album string, picture string) (*domain.Picture, error)
 	CreatePicture(picture *domain.Picture) error

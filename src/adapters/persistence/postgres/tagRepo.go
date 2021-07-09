@@ -9,7 +9,7 @@ import (
 type Tag struct {
 	gorm.Model
 	ID   uuid.UUID `gorm:"type:uuid;primary_key"`
-	Name string
+	Name string    `gorm:"uniqueIndex"`
 }
 
 type tagRepo struct {
