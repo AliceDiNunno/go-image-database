@@ -3,9 +3,24 @@ package usecases
 import (
 	"github.com/AliceDiNunno/go-image-database/src/core/domain"
 	"github.com/AliceDiNunno/go-image-database/src/core/domain/Request"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"time"
 )
+
+func (i interactor) FetchAlbum(user *domain.User, id uuid.UUID) (*domain.Album, error) {
+	if user == nil {
+		return nil, domain.ErrFailedToGetUser
+	}
+
+	album, err := i.albumRepo.FindById(user.UserID, id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return album, nil
+}
 
 func (i interactor) CreateAlbum(user *domain.User, request *Request.CreateAlbumRequest) error {
 	album := &domain.Album{
@@ -44,8 +59,8 @@ func (i interactor) GetUserAlbums(user *domain.User) ([]*domain.Album, error) {
 	return workflows, nil
 }
 
-func (i interactor) GetAlbumsContent(user *domain.User, id string) ([]*domain.Picture, error) {
-	album, err := i.albumRepo.FindById(user.UserID, id)
+func (i interactor) GetAlbumsContent(user *domain.User, album *domain.Album) ([]*domain.Picture, error) {
+	album, err := i.albumRepo.FindById(user.UserID, album.ID)
 
 	if err != nil {
 		return nil, domain.ErrAlbumNotFound
@@ -60,8 +75,8 @@ func (i interactor) GetAlbumsContent(user *domain.User, id string) ([]*domain.Pi
 	return pictures, nil
 }
 
-func (i interactor) DeleteAlbum(user *domain.User, id string) error {
-	album, err := i.albumRepo.FindById(user.UserID, id)
+func (i interactor) DeleteAlbum(user *domain.User, album *domain.Album) error {
+	album, err := i.albumRepo.FindById(user.UserID, album.ID)
 
 	if err != nil || album == nil {
 		return domain.ErrAlbumNotFound
@@ -80,8 +95,8 @@ func (i interactor) DeleteAlbum(user *domain.User, id string) error {
 	return nil
 }
 
-func (i interactor) UpdateAlbum(user *domain.User, albumId string, request Request.EditAlbumRequest) error {
-	album, err := i.albumRepo.FindById(user.UserID, albumId)
+func (i interactor) UpdateAlbum(user *domain.User, album *domain.Album, request Request.EditAlbumRequest) error {
+	album, err := i.albumRepo.FindById(user.UserID, album.ID)
 
 	if err != nil || album == nil {
 		return domain.ErrAlbumNotFound
@@ -152,8 +167,8 @@ func (i interactor) UpdateAlbum(user *domain.User, albumId string, request Reque
 	return nil
 }
 
-func (i interactor) SearchAlbumContent(user *domain.User, albumId string, request Request.SearchAlbumRequest) ([]*domain.SearchPictureResult, error) {
-	album, err := i.albumRepo.FindById(user.UserID, albumId)
+func (i interactor) SearchAlbumContent(user *domain.User, album *domain.Album, request Request.SearchAlbumRequest) ([]*domain.SearchPictureResult, error) {
+	album, err := i.albumRepo.FindById(user.UserID, album.ID)
 
 	if err != nil || album == nil {
 		return nil, domain.ErrAlbumNotFound

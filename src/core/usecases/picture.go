@@ -3,12 +3,27 @@ package usecases
 import (
 	"github.com/AliceDiNunno/go-image-database/src/core/domain"
 	"github.com/AliceDiNunno/go-image-database/src/core/domain/Request"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"io"
 )
 
-func (i interactor) UploadPicture(user *domain.User, albumId string, file io.Reader, contentType string) error {
-	album, err := i.albumRepo.FindById(user.UserID, albumId)
+func (i interactor) FetchPicture(user *domain.User, album *domain.Album, fileId uuid.UUID) (*domain.Picture, error) {
+	if user == nil {
+		return nil, domain.ErrFailedToGetUser
+	}
+
+	picture, err := i.pictureRepo.FindById(user.UserID, album.ID, fileId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return picture, nil
+}
+
+func (i interactor) UploadPicture(user *domain.User, album *domain.Album, file io.Reader, contentType string) error {
+	album, err := i.albumRepo.FindById(user.UserID, album.ID)
 
 	if err != nil || album == nil {
 		return domain.ErrAlbumNotFound
@@ -40,8 +55,8 @@ func (i interactor) UploadPicture(user *domain.User, albumId string, file io.Rea
 	return nil
 }
 
-func (i interactor) DeletePicture(user *domain.User, albumId string, fileId string) error {
-	picture, err := i.pictureRepo.FindById(user.UserID, albumId, fileId)
+func (i interactor) DeletePicture(user *domain.User, album *domain.Album, picture *domain.Picture) error {
+	picture, err := i.pictureRepo.FindById(user.UserID, album.ID, picture.ID)
 
 	if err != nil || picture == nil {
 		return domain.ErrPictureNotFound
@@ -52,7 +67,7 @@ func (i interactor) DeletePicture(user *domain.User, albumId string, fileId stri
 		return domain.ErrUnableToDeleteObject
 	}
 
-	err = i.fileStorage.DeleteFile(fileId)
+	err = i.fileStorage.DeleteFile(picture.ID.String())
 	if err != nil {
 		return domain.ErrUnableToDeleteObject
 	}
@@ -60,14 +75,8 @@ func (i interactor) DeletePicture(user *domain.User, albumId string, fileId stri
 	return nil
 }
 
-func (i interactor) FetchPicture(user *domain.User, albumId string, fileId string) (io.Reader, error) {
-	picture, err := i.pictureRepo.FindById(user.UserID, albumId, fileId)
-
-	if err != nil || picture == nil {
-		return nil, domain.ErrPictureNotFound
-	}
-
-	io, err := i.fileStorage.GetFile(fileId)
+func (i interactor) FetchPictureData(user *domain.User, album *domain.Album, picture *domain.Picture) (io.Reader, error) {
+	io, err := i.fileStorage.GetFile(picture.ID.String())
 	if err != nil {
 		return nil, err
 	}
@@ -75,13 +84,7 @@ func (i interactor) FetchPicture(user *domain.User, albumId string, fileId strin
 	return io, nil
 }
 
-func (i interactor) UpdatePicture(user *domain.User, albumId string, fileId string, request Request.EditPictureRequest) error {
-	picture, err := i.pictureRepo.FindById(user.UserID, albumId, fileId)
-
-	if err != nil || picture == nil {
-		return domain.ErrPictureNotFound
-	}
-
+func (i interactor) UpdatePicture(user *domain.User, album *domain.Album, picture *domain.Picture, request Request.EditPictureRequest) error {
 	//When we want to add a tag, if it doesn't exist we want to create it
 	for _, tagToAdd := range request.Tags.Add {
 		tag, err := i.tagRepo.FindTag(tagToAdd)
@@ -130,7 +133,7 @@ func (i interactor) UpdatePicture(user *domain.User, albumId string, fileId stri
 		}
 	}
 
-	err = i.pictureRepo.UpdatePicture(picture)
+	err := i.pictureRepo.UpdatePicture(picture)
 
 	return err
 }

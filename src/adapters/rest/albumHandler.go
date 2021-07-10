@@ -1,15 +1,48 @@
 package rest
 
 import (
+	"github.com/AliceDiNunno/go-image-database/src/core/domain"
 	"github.com/AliceDiNunno/go-image-database/src/core/domain/Request"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"net/http"
 )
 
 func (rH RoutesHandler) fetchingAlbumMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		user := rH.getAuthenticatedUser(c)
+		if user == nil {
+			return
+		}
 
+		id, err := uuid.Parse(c.Param("album"))
+
+		if err != nil {
+			rH.handleError(c, ErrFormValidation)
+			return
+		}
+
+		album, err := rH.usecases.FetchAlbum(user, id)
+
+		if err != nil {
+			rH.handleError(c, domain.ErrAlbumNotFound)
+			return
+		}
+
+		c.Set("album", album)
 	}
+}
+
+func (rH RoutesHandler) getAlbum(c *gin.Context) *domain.Album {
+	album, exists := c.Get("album")
+
+	if !exists {
+		return nil
+	}
+
+	foundAlbum := album.(*domain.Album)
+
+	return foundAlbum
 }
 
 func (rH RoutesHandler) GetUserAlbumsHandler(c *gin.Context) {
@@ -48,10 +81,17 @@ func (rH RoutesHandler) CreateUserAlbumHandler(c *gin.Context) {
 }
 
 func (rH RoutesHandler) GetAlbumContentHandler(c *gin.Context) {
-	id := c.Param("album")
 	user := rH.getAuthenticatedUser(c)
+	if user == nil {
+		return
+	}
 
-	content, err := rH.usecases.GetAlbumsContent(user, id)
+	album := rH.getAlbum(c)
+	if album == nil {
+		return
+	}
+
+	content, err := rH.usecases.GetAlbumsContent(user, album)
 
 	if err != nil {
 		rH.handleError(c, err)
@@ -62,8 +102,15 @@ func (rH RoutesHandler) GetAlbumContentHandler(c *gin.Context) {
 }
 
 func (rH RoutesHandler) SearchAlbumContentHandler(c *gin.Context) {
-	id := c.Param("album")
+	album := rH.getAlbum(c)
+	if album == nil {
+		return
+	}
+
 	user := rH.getAuthenticatedUser(c)
+	if user == nil {
+		return
+	}
 
 	var request Request.SearchAlbumRequest
 	err := c.ShouldBind(&request)
@@ -73,7 +120,7 @@ func (rH RoutesHandler) SearchAlbumContentHandler(c *gin.Context) {
 		return
 	}
 
-	content, err := rH.usecases.SearchAlbumContent(user, id, request)
+	content, err := rH.usecases.SearchAlbumContent(user, album, request)
 
 	if err != nil {
 		rH.handleError(c, err)
@@ -89,9 +136,12 @@ func (rH RoutesHandler) DeleteAlbumHandler(c *gin.Context) {
 		return
 	}
 
-	id := c.Param("album")
+	album := rH.getAlbum(c)
+	if album == nil {
+		return
+	}
 
-	err := rH.usecases.DeleteAlbum(user, id)
+	err := rH.usecases.DeleteAlbum(user, album)
 
 	if err != nil {
 		rH.handleError(c, err)
@@ -107,6 +157,11 @@ func (rH RoutesHandler) EditAlbumDataHandler(c *gin.Context) {
 		return
 	}
 
+	album := rH.getAlbum(c)
+	if album == nil {
+		return
+	}
+
 	var request Request.EditAlbumRequest
 	err := c.ShouldBind(&request)
 
@@ -115,9 +170,7 @@ func (rH RoutesHandler) EditAlbumDataHandler(c *gin.Context) {
 		return
 	}
 
-	albumId := c.Param("album")
-
-	err = rH.usecases.UpdateAlbum(user, albumId, request)
+	err = rH.usecases.UpdateAlbum(user, album, request)
 
 	if err != nil {
 		rH.handleError(c, err)

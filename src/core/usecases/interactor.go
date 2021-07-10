@@ -17,7 +17,7 @@ type AlbumRepo interface {
 	CreateAlbum(album *domain.Album) error
 	FindByName(user uuid.UUID, name string) (*domain.Album, error)
 	FindByUser(user uuid.UUID) ([]*domain.Album, error)
-	FindById(user uuid.UUID, id string) (*domain.Album, error)
+	FindById(user uuid.UUID, id uuid.UUID) (*domain.Album, error)
 	DeleteAlbum(album *domain.Album) error
 	UpdateAlbum(album *domain.Album) error
 }
@@ -25,7 +25,7 @@ type AlbumRepo interface {
 type PictureRepo interface {
 	SearchPictures(album *domain.Album, tags []string) ([]*domain.SearchPictureResult, error)
 	FindPictures(album *domain.Album) ([]*domain.Picture, error)
-	FindById(user uuid.UUID, album string, picture string) (*domain.Picture, error)
+	FindById(user uuid.UUID, album uuid.UUID, picture uuid.UUID) (*domain.Picture, error)
 	CreatePicture(picture *domain.Picture) error
 	DeletePicture(picture *domain.Picture) error
 	UpdatePicture(picture *domain.Picture) error
