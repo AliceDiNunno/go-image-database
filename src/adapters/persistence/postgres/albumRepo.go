@@ -99,7 +99,7 @@ func (a albumRepo) FindByUser(user uuid.UUID) ([]*domain.Album, error) {
 func (a albumRepo) FindById(user uuid.UUID, id uuid.UUID) (*domain.Album, error) {
 	var album *Album
 
-	query := a.db.Preload("Tags").Where("\"user\" = ? AND \"id\" = ?", user, id).First(&album)
+	query := a.db.Preload("Tags").Where("(\"user\" = ? OR \"is_public\" = true) AND \"id\" = ?", user, id).First(&album)
 
 	if query.Error != nil {
 		return nil, query.Error

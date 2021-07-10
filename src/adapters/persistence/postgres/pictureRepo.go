@@ -117,13 +117,17 @@ func (p pictureRepo) FindPictures(album *domain.Album) ([]*domain.Picture, error
 func (p pictureRepo) FindById(userId uuid.UUID, albumId uuid.UUID, pictureId uuid.UUID) (*domain.Picture, error) {
 	var picture *Picture
 
-	query := p.db.Joins("Album").Preload("Tags").Where("pictures.user = ? AND pictures.album_id = ? AND pictures.id = ?", userId, albumId, pictureId).Find(&picture)
+	query := p.db.Joins("Album").Preload("Tags").Where("pictures.album_id = ? AND pictures.id = ?", albumId, pictureId).Find(&picture)
 
 	if query.Error != nil {
 		return nil, query.Error
 	}
 
 	if query.RowsAffected <= 0 {
+		return nil, domain.ErrPictureNotFound
+	}
+
+	if !picture.Album.IsPublic && picture.User != userId {
 		return nil, domain.ErrPictureNotFound
 	}
 
