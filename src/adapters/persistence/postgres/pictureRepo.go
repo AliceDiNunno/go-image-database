@@ -144,9 +144,6 @@ func (p pictureRepo) UpdatePicture(picture *domain.Picture) error {
 
 //TODO: there should be 1000 ways to improve this but I guess I don't master gorm well enough yet
 func (p pictureRepo) SearchPictures(album *domain.Album, tags []string) ([]*domain.SearchPictureResult, error) {
-	//	var tagsFromDomain []*Tag
-	//albumFromDomain := albumFromDomain(album)
-
 	whereClause := "WHERE "
 
 	if len(tags) > 0 {
