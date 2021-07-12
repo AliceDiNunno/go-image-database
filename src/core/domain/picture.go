@@ -13,6 +13,7 @@ type Picture struct {
 
 	Tags  []*Tag
 	Album *Album
+	Phash string
 }
 
 func (p *Picture) Initialize() {

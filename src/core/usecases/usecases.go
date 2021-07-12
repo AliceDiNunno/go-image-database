@@ -21,4 +21,7 @@ type Usecases interface {
 	DeletePicture(user *domain.User, album *domain.Album, picture *domain.Picture) error
 	UpdatePicture(user *domain.User, album *domain.Album, picture *domain.Picture, request Request.EditPictureRequest) error
 	UploadPicture(user *domain.User, album *domain.Album, picture io.Reader, contentType string) error
+
+	FetchAllUnhashedPictures() []*domain.Picture
+	CalculatePictureHash()
 }

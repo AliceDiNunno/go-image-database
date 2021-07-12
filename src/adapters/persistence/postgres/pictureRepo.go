@@ -15,6 +15,7 @@ type Picture struct {
 	Tags    []*Tag `gorm:"many2many:picture_tags;"`
 	AlbumID uuid.UUID
 	Album   *Album
+	Phash   string
 }
 
 type PictureSearchResult struct {
@@ -33,6 +34,7 @@ func pictureToDomain(picture *Picture) *domain.Picture {
 		CreatedDate: picture.CreatedAt,
 		Album:       albumToDomain(picture.Album),
 		Tags:        tagsToDomain(picture.Tags),
+		Phash:       picture.Phash,
 	}
 }
 
@@ -44,23 +46,6 @@ func picturesToDomain(pictures []*Picture) []*domain.Picture {
 	}
 
 	return pictureList
-}
-
-func searchPictureToDomain(picture *PictureSearchResult) *domain.SearchPictureResult {
-	return &domain.SearchPictureResult{
-		ID:      picture.ID,
-		AlbumID: picture.AlbumID,
-	}
-}
-
-func searchPicturesToDomain(pictures []*PictureSearchResult) []*domain.SearchPictureResult {
-	albumList := []*domain.SearchPictureResult{}
-
-	for _, album := range pictures {
-		albumList = append(albumList, searchPictureToDomain(album))
-	}
-
-	return albumList
 }
 
 func pictureFromDomain(picture *domain.Picture) *Picture {
@@ -78,7 +63,25 @@ func pictureFromDomain(picture *domain.Picture) *Picture {
 		User:    picture.User,
 		AlbumID: picture.Album.ID,
 		Tags:    tags,
+		Phash:   picture.Phash,
 	}
+}
+
+func searchPictureToDomain(picture *PictureSearchResult) *domain.SearchPictureResult {
+	return &domain.SearchPictureResult{
+		ID:      picture.ID,
+		AlbumID: picture.AlbumID,
+	}
+}
+
+func searchPicturesToDomain(pictures []*PictureSearchResult) []*domain.SearchPictureResult {
+	albumList := []*domain.SearchPictureResult{}
+
+	for _, album := range pictures {
+		albumList = append(albumList, searchPictureToDomain(album))
+	}
+
+	return albumList
 }
 
 func (p pictureRepo) CreatePicture(picture *domain.Picture) error {
