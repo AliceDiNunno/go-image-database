@@ -78,7 +78,7 @@ func (rH RoutesHandler) handleError(c *gin.Context, err error) {
 	fields := log.Fields{
 		"code": code,
 		"ip":   c.ClientIP(),
-		"path": c.FullPath(),
+		"path": c.Request.RequestURI,
 	}
 
 	authenticatedUser := rH.getAuthenticatedUser(c)
