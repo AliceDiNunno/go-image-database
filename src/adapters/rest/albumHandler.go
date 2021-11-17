@@ -3,6 +3,7 @@ package rest
 import (
 	"github.com/AliceDiNunno/go-image-database/src/core/domain"
 	"github.com/AliceDiNunno/go-image-database/src/core/domain/Request"
+	e "github.com/AliceDiNunno/go-nested-traced-error"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"net/http"
@@ -15,17 +16,17 @@ func (rH RoutesHandler) fetchingAlbumMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		id, err := uuid.Parse(c.Param("album"))
+		id, stderr := uuid.Parse(c.Param("album"))
 
-		if err != nil {
-			rH.handleError(c, ErrFormValidation)
+		if stderr != nil {
+			rH.handleError(c, e.Wrap(stderr).Append(ErrFormValidation))
 			return
 		}
 
 		album, err := rH.usecases.FetchAlbum(user, id)
 
 		if err != nil {
-			rH.handleError(c, domain.ErrAlbumNotFound)
+			rH.handleError(c, err.Append(domain.ErrAlbumNotFound))
 			return
 		}
 
@@ -64,13 +65,13 @@ func (rH RoutesHandler) CreateUserAlbumHandler(c *gin.Context) {
 	user := rH.getAuthenticatedUser(c)
 
 	var request Request.CreateAlbumRequest
-	err := c.ShouldBind(&request)
-	if err != nil {
-		rH.handleError(c, ErrFormValidation)
+	stderr := c.ShouldBind(&request)
+	if stderr != nil {
+		rH.handleError(c, e.Wrap(stderr).Append(ErrFormValidation))
 		return
 	}
 
-	err = rH.usecases.CreateAlbum(user, &request)
+	err := rH.usecases.CreateAlbum(user, &request)
 
 	if err != nil {
 		rH.handleError(c, err)
@@ -113,10 +114,10 @@ func (rH RoutesHandler) SearchAlbumContentHandler(c *gin.Context) {
 	}
 
 	var request Request.SearchAlbumRequest
-	err := c.ShouldBind(&request)
+	stderr := c.ShouldBind(&request)
 
-	if err != nil {
-		rH.handleError(c, ErrFormValidation)
+	if stderr != nil {
+		rH.handleError(c, e.Wrap(stderr).Append(ErrFormValidation))
 		return
 	}
 
@@ -163,14 +164,14 @@ func (rH RoutesHandler) EditAlbumDataHandler(c *gin.Context) {
 	}
 
 	var request Request.EditAlbumRequest
-	err := c.ShouldBind(&request)
+	stderr := c.ShouldBind(&request)
 
-	if err != nil {
-		rH.handleError(c, ErrFormValidation)
+	if stderr != nil {
+		rH.handleError(c, e.Wrap(stderr).Append(ErrFormValidation))
 		return
 	}
 
-	err = rH.usecases.UpdateAlbum(user, album, request)
+	err := rH.usecases.UpdateAlbum(user, album, request)
 
 	if err != nil {
 		rH.handleError(c, err)

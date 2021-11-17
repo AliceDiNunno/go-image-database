@@ -3,6 +3,7 @@ package postgres
 import (
 	"fmt"
 	"github.com/AliceDiNunno/go-image-database/src/core/domain"
+	e "github.com/AliceDiNunno/go-nested-traced-error"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -84,69 +85,70 @@ func searchPicturesToDomain(pictures []*PictureSearchResult) []*domain.SearchPic
 	return albumList
 }
 
-func (p pictureRepo) CreatePicture(picture *domain.Picture) error {
+func (p pictureRepo) CreatePicture(picture *domain.Picture) *e.Error {
 	pictureToCreate := pictureFromDomain(picture)
 
 	result := p.db.Create(pictureToCreate)
 
 	if result.Error != nil {
-		return result.Error
+		return e.Wrap(result.Error)
 	}
 
 	return nil
 }
 
-func (p pictureRepo) DeletePicture(picture *domain.Picture) error {
+func (p pictureRepo) DeletePicture(picture *domain.Picture) *e.Error {
 	idToRemove := picture.ID
 
 	query := p.db.Where("id = ?", idToRemove).Delete(&Picture{})
 
-	return query.Error
+	return e.Wrap(query.Error)
 }
 
-func (p pictureRepo) FindPictures(album *domain.Album) ([]*domain.Picture, error) {
+func (p pictureRepo) FindPictures(album *domain.Album) ([]*domain.Picture, *e.Error) {
 	albumId := album.ID
 	var pictures []*Picture
 
 	query := p.db.Joins("Album").Preload("Tags").Where("album_id = ?", albumId).Find(&pictures)
 
 	if query.Error != nil {
-		return nil, query.Error
+		return nil, e.Wrap(query.Error)
 	}
 
 	return picturesToDomain(pictures), nil
 }
 
-func (p pictureRepo) FindById(userId uuid.UUID, albumId uuid.UUID, pictureId uuid.UUID) (*domain.Picture, error) {
+func (p pictureRepo) FindById(userId uuid.UUID, albumId uuid.UUID, pictureId uuid.UUID) (*domain.Picture, *e.Error) {
 	var picture *Picture
 
 	query := p.db.Joins("Album").Preload("Tags").Where("pictures.album_id = ? AND pictures.id = ?", albumId, pictureId).Find(&picture)
 
 	if query.Error != nil {
-		return nil, query.Error
+		return nil, e.Wrap(query.Error)
 	}
 
 	if query.RowsAffected <= 0 {
-		return nil, domain.ErrPictureNotFound
+		return nil, e.Wrap(domain.ErrPictureNotFound)
 	}
 
+	//TODO: move verification in usecase
 	if !picture.Album.IsPublic && picture.User != userId {
-		return nil, domain.ErrPictureNotFound
+		return nil, e.Wrap(domain.ErrPictureNotFound)
 	}
 
 	return pictureToDomain(picture), nil
 }
 
-func (p pictureRepo) UpdatePicture(picture *domain.Picture) error {
+func (p pictureRepo) UpdatePicture(picture *domain.Picture) *e.Error {
 	pictureToUpdate := pictureFromDomain(picture)
 
 	err := p.db.Model(&pictureToUpdate).Association("Tags").Replace(pictureToUpdate.Tags)
 
-	return err
+	return e.Wrap(err)
 }
 
 //TODO: there should be 1000 ways to improve this but I guess I don't master gorm well enough yet
-func (p pictureRepo) SearchPictures(album *domain.Album, tags []string) ([]*domain.SearchPictureResult, error) {
+func (p pictureRepo) SearchPictures(album *domain.Album, tags []string) ([]*domain.SearchPictureResult, *e.Error) {
 	whereClause := "WHERE "
 
 	if len(tags) > 0 {
@@ -173,7 +175,7 @@ func (p pictureRepo) SearchPictures(album *domain.Album, tags []string) ([]*doma
 
 	query := p.db.Raw(rawQuery).Scan(&pictures)
 
-	return searchPicturesToDomain(pictures), query.Error
+	return searchPicturesToDomain(pictures), e.Wrap(query.Error)
 }
 
 func NewPictureRepo(db *gorm.DB) pictureRepo {

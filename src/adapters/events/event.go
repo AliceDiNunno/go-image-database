@@ -16,7 +16,7 @@ func (e event) Start() {
 		for {
 			select {
 			case <-ticker.C:
-				//Jean Castex Bien Sur
+				return
 			case <-quit:
 				ticker.Stop()
 				return

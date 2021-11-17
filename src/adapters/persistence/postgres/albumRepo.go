@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"github.com/AliceDiNunno/go-image-database/src/core/domain"
+	e "github.com/AliceDiNunno/go-nested-traced-error"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -60,69 +61,69 @@ func albumsToDomain(albums []*Album) []*domain.Album {
 	return albumList
 }
 
-func (a albumRepo) CreateAlbum(album *domain.Album) error {
+func (a albumRepo) CreateAlbum(album *domain.Album) *e.Error {
 	albumToCreate := albumFromDomain(album)
 
 	result := a.db.Create(albumToCreate)
 
 	if result.Error != nil {
-		return result.Error
+		return e.Wrap(result.Error)
 	}
 
 	return nil
 }
 
-func (a albumRepo) FindByName(user uuid.UUID, name string) (*domain.Album, error) {
+func (a albumRepo) FindByName(user uuid.UUID, name string) (*domain.Album, *e.Error) {
 	var album *Album
 
 	query := a.db.Preload("Tags").Where("\"user\" = ? AND name = ?", user, name).First(&album)
 
 	if query.Error != nil {
-		return nil, query.Error
+		return nil, e.Wrap(query.Error)
 	}
 
 	return albumToDomain(album), nil
 }
 
-func (a albumRepo) FindByUser(user uuid.UUID) ([]*domain.Album, error) {
+func (a albumRepo) FindByUser(user uuid.UUID) ([]*domain.Album, *e.Error) {
 	var albums []*Album
 
 	query := a.db.Preload("Tags").Where("\"user\" = ?", user).Find(&albums)
 
 	if query.Error != nil {
-		return nil, query.Error
+		return nil, e.Wrap(query.Error)
 	}
 
 	return albumsToDomain(albums), nil
 }
 
-func (a albumRepo) FindById(user uuid.UUID, id uuid.UUID) (*domain.Album, error) {
+func (a albumRepo) FindById(user uuid.UUID, id uuid.UUID) (*domain.Album, *e.Error) {
 	var album *Album
 
 	query := a.db.Preload("Tags").Where("(\"user\" = ? OR \"is_public\" = true) AND \"id\" = ?", user, id).First(&album)
 
 	if query.Error != nil {
-		return nil, query.Error
+		return nil, e.Wrap(query.Error)
 	}
 
 	return albumToDomain(album), nil
 }
 
-func (a albumRepo) DeleteAlbum(album *domain.Album) error {
+func (a albumRepo) DeleteAlbum(album *domain.Album) *e.Error {
 	idToRemove := album.ID
 
 	query := a.db.Where("id = ?", idToRemove).Delete(&Album{})
 
-	return query.Error
+	return e.Wrap(query.Error)
 }
 
-func (a albumRepo) UpdateAlbum(album *domain.Album) error {
+func (a albumRepo) UpdateAlbum(album *domain.Album) *e.Error {
 	albumToUpdate := albumFromDomain(album)
 
 	err := a.db.Model(&albumToUpdate).Association("Tags").Replace(albumToUpdate.Tags)
 	a.db.Omit("CreatedAt").Save(&albumToUpdate)
 
-	return err
+	return e.Wrap(err)
 }
 
 func NewAlbumRepo(db *gorm.DB) albumRepo {
