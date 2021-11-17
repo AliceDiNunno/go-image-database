@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"github.com/AliceDiNunno/go-image-database/src/core/domain"
+	e "github.com/AliceDiNunno/go-nested-traced-error"
 	"github.com/google/uuid"
 	"io"
 )
@@ -14,33 +15,33 @@ type Logger interface {
 }
 
 type AlbumRepo interface {
-	CreateAlbum(album *domain.Album) error
-	FindByName(user uuid.UUID, name string) (*domain.Album, error)
-	FindByUser(user uuid.UUID) ([]*domain.Album, error)
-	FindById(user uuid.UUID, id uuid.UUID) (*domain.Album, error)
-	DeleteAlbum(album *domain.Album) error
-	UpdateAlbum(album *domain.Album) error
+	CreateAlbum(album *domain.Album) *e.Error
+	FindByName(user uuid.UUID, name string) (*domain.Album, *e.Error)
+	FindByUser(user uuid.UUID) ([]*domain.Album, *e.Error)
+	FindById(user uuid.UUID, id uuid.UUID) (*domain.Album, *e.Error)
+	DeleteAlbum(album *domain.Album) *e.Error
+	UpdateAlbum(album *domain.Album) *e.Error
 }
 
 type PictureRepo interface {
-	SearchPictures(album *domain.Album, tags []string) ([]*domain.SearchPictureResult, error)
-	FindPictures(album *domain.Album) ([]*domain.Picture, error)
-	FindById(user uuid.UUID, album uuid.UUID, picture uuid.UUID) (*domain.Picture, error)
-	CreatePicture(picture *domain.Picture) error
-	DeletePicture(picture *domain.Picture) error
-	UpdatePicture(picture *domain.Picture) error
+	SearchPictures(album *domain.Album, tags []string) ([]*domain.SearchPictureResult, *e.Error)
+	FindPictures(album *domain.Album) ([]*domain.Picture, *e.Error)
+	FindById(user uuid.UUID, album uuid.UUID, picture uuid.UUID) (*domain.Picture, *e.Error)
+	CreatePicture(picture *domain.Picture) *e.Error
+	DeletePicture(picture *domain.Picture) *e.Error
+	UpdatePicture(picture *domain.Picture) *e.Error
 }
 
 type TagRepo interface {
-	FindTag(name string) (*domain.Tag, error)
-	FindTags(name string) ([]*domain.Tag, error)
-	CreateTag(tag *domain.Tag) error
+	FindTag(name string) (*domain.Tag, *e.Error)
+	FindTags(name string) ([]*domain.Tag, *e.Error)
+	CreateTag(tag *domain.Tag) *e.Error
 }
 
 type FileStorage interface {
-	UploadFile(id string, file io.Reader) error
-	DeleteFile(id string) error
-	GetFile(id string) (io.Reader, error)
+	UploadFile(id string, file io.Reader) *e.Error
+	DeleteFile(id string) *e.Error
+	GetFile(id string) (io.Reader, *e.Error)
 }
 
 type interactor struct {

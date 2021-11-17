@@ -3,6 +3,7 @@ package rest
 import (
 	"github.com/AliceDiNunno/go-image-database/src/core/domain"
 	"github.com/AliceDiNunno/go-image-database/src/core/domain/Request"
+	e "github.com/AliceDiNunno/go-nested-traced-error"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"io"
@@ -21,17 +22,17 @@ func (rH RoutesHandler) fetchingPictureMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		id, err := uuid.Parse(c.Param("picture"))
+		id, stderr := uuid.Parse(c.Param("picture"))
 
-		if err != nil {
-			rH.handleError(c, ErrFormValidation)
+		if stderr != nil {
+			rH.handleError(c, e.Wrap(stderr).Append(ErrFormValidation))
 			return
 		}
 
 		picture, err := rH.usecases.FetchPicture(user, album, id)
 
 		if err != nil {
-			rH.handleError(c, domain.ErrPictureNotFound)
+			rH.handleError(c, err.Append(domain.ErrPictureNotFound))
 			return
 		}
 
@@ -89,26 +90,21 @@ func (rH RoutesHandler) PostToAlbumHandler(c *gin.Context) {
 		return
 	}
 
-	file, header, err := c.Request.FormFile("upload")
+	file, header, stderr := c.Request.FormFile("upload")
 
-	if err != nil {
-		rH.handleError(c, ErrUploadFileNotFound)
+	if stderr != nil {
+		rH.handleError(c, e.Wrap(stderr).Append(ErrUploadFileNotFound))
 		return
 	}
 
 	contentType := header.Header["Content-Type"]
 
 	if len(contentType) <= 0 {
-		rH.handleError(c, ErrFormValidation)
+		rH.handleError(c, e.Wrap(ErrMissingContentType))
 		return
 	}
 
-	if err != nil {
-		rH.handleError(c, ErrFormValidation)
-		return
-	}
-
-	err = rH.usecases.UploadPicture(user, album, file, contentType[0])
+	err := rH.usecases.UploadPicture(user, album, file, contentType[0])
 
 	if err != nil {
 		rH.handleError(c, err)
@@ -161,14 +157,14 @@ func (rH RoutesHandler) EditPictureDataHandler(c *gin.Context) {
 	}
 
 	var request Request.EditPictureRequest
-	err := c.ShouldBind(&request)
+	stderr := c.ShouldBind(&request)
 
-	if err != nil {
-		rH.handleError(c, ErrFormValidation)
+	if stderr != nil {
+		rH.handleError(c, e.Wrap(ErrFormValidation))
 		return
 	}
 
-	err = rH.usecases.UpdatePicture(user, album, picture, request)
+	err := rH.usecases.UpdatePicture(user, album, picture, request)
 
 	if err != nil {
 		rH.handleError(c, err)

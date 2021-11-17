@@ -2,6 +2,7 @@ package rest
 
 import (
 	"github.com/AliceDiNunno/go-image-database/src/core/domain"
+	e "github.com/AliceDiNunno/go-nested-traced-error"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -12,7 +13,7 @@ func (rH RoutesHandler) fetchingUserMiddleware() gin.HandlerFunc {
 		userFound := true
 
 		if !userFound {
-			rH.handleError(c, domain.ErrFailedToGetUser)
+			rH.handleError(c, e.Wrap(domain.ErrFailedToGetUser))
 			return
 		}
 
@@ -21,7 +22,7 @@ func (rH RoutesHandler) fetchingUserMiddleware() gin.HandlerFunc {
 		id, err := uuid.FromBytes(bytes)
 
 		if err != nil {
-			rH.handleError(c, err)
+			rH.handleError(c, e.Wrap(err))
 			return
 		}
 
